@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:latest
+    container_name: TrackingDB
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "@tm123456"
+    ports:
+      - "1460:1433"
+    networks:
+      ptms:
+        ipv4_address: 10.43.0.3
+
+  base.api:
+    build:
+      context: .
+      dockerfile: backend/TrackingAPIsV1/ProductTrackingAPI/Dockerfile
+    ports:
+      - "5155:80"
+    environment:
+        - ASPNETCORE_ENVIRONMENT=Deploy
+        - ASPNETCORE_URLS=http://+:80
+    networks:
+      ptms:
+        ipv4_address: 10.43.0.4
+
+networks:
+  ptms:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.43.0.0/16

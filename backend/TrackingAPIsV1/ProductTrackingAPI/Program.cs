@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using ProductTrackingAPI.Data;
 using ProductTrackingAPI.Services;
 using ProductTrackingAPI.Utils;
+using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,13 +16,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<TokenWriter>();
-builder.Services.AddDbContext<TrackingManagementContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+//builder.Services.AddDbContext<TrackingManagementContext>(options =>
+//options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddDbContext<TrackingManagementContext>(options => {
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Npsql"));
+}, ServiceLifetime.Transient);
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("default", builder => {
-        //builder.WithOrigins("http://localhost:800").AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        //builder.WithOrigins("http://localhost:8001").AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
         builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
         //builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost");
         //builder.SetIsOriginAllowed(origin => true);
@@ -65,7 +69,7 @@ var app = builder.Build();
     app.UseSwaggerUI();
 // }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 //app.UseCors("default");
 
 app.UseAuthentication();

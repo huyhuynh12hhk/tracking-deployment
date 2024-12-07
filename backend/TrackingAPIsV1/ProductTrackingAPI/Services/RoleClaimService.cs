@@ -1,6 +1,6 @@
 ﻿using ProductTrackingAPI.Constants;
 using ProductTrackingAPI.Data;
-using ProductTrackingAPI.Models;
+using ProductTrackingAPI.Models.Users;
 
 namespace ProductTrackingAPI.Services
 {

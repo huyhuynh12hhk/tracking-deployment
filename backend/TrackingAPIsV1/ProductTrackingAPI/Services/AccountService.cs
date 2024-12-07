@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProductTrackingAPI.Constants;
 using ProductTrackingAPI.Data;
 using ProductTrackingAPI.DTOs;
-using ProductTrackingAPI.Models;
+using ProductTrackingAPI.Models.Users;
 using ProductTrackingAPI.Utils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -17,14 +18,17 @@ namespace ProductTrackingAPI.Services
         private readonly TrackingManagementContext context;
         private readonly ILogger<AccountService> logger;
         private readonly TokenWriter tokenWriter;
+        private readonly IMapper mapper;
 
         public AccountService(TrackingManagementContext context,
-            TokenWriter tokenWriter, 
-            ILogger<AccountService> logger)
+            TokenWriter tokenWriter,
+            ILogger<AccountService> logger,
+            IMapper mapper)
         {
             this.context = context;
             this.tokenWriter = tokenWriter;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         public async Task<bool> CheckUserCredentials(string username, string password)
@@ -52,22 +56,26 @@ namespace ProductTrackingAPI.Services
                 .ToListAsync();
         }
         
-        public async Task<UserFullInfoView?> FindUserInfo(Expression<Func<UserDetail, bool>> filter)
+        public async Task<UserFullInfoView?> FindUserInfo(Expression<Func<UserDetail, bool>> filter, string fromId = "")
         {
             var user = await context.DetailUsers.FirstOrDefaultAsync(filter);
+            
             if (user == null) { return null; }
 
-            //var userClaims = await GetUserClaim(user);
 
-            return new UserFullInfoView
+            //var userClaims = await GetUserClaim(user);
+            var info = mapper.Map<UserFullInfoView>(user);
+
+            if (!string.IsNullOrWhiteSpace(fromId))
             {
-                Id = user.Id,
-                Email = user.Email,
-                Address = user.Address,
-                FullName = user.FullName,
-                Gender = user.Gender,
-                Avatar = user.AvatarImage
-            };
+                var rela = await context.Relationships.FirstOrDefaultAsync(e => e.FromUserId == fromId && e.ToUserId == user.Id);
+                info.Relationship = rela?.Type ?? "";
+            }
+
+            
+
+            return info;
+            
         }
 
         public async Task<UserMinInfoView> ProductUserToken(string email)
@@ -85,34 +93,23 @@ namespace ProductTrackingAPI.Services
                 new(UserClaimTypes.userId.ToString(), user.Id)
             });
 
-            return new UserMinInfoView
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-                Token = tokenWriter.GenerateToken(totalClaims),
-                Avatar = user.AvatarImage,
-                BackgroundImage = user.BackgroundImage,
-            }; ;
+            var result = mapper.Map<UserMinInfoView>(user);
+            result.Token = tokenWriter.GenerateToken(totalClaims);
+
+            return result;
         }
 
         public async Task<List<UserMinInfoView>> GetUsers(Expression<Func<UserDetail, bool>>? filter = null)
         {
-            var users =  await context.DetailUsers.Where(filter==null?u=>true:filter).ToListAsync();
+            var users =  await context.DetailUsers
+                .OrderBy(e => e.FullName)
+                .Where(filter==null?u=>true:filter).ToListAsync();
             return users.Select(user=>
             {
                 //var account = FindAccountsByEmail(user.Email, provider: AccountProviders.None).Result.First();
                 //var userClaims = GetUserClaim(user).Result;
 
-                return new UserMinInfoView
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FullName = user.FullName,
-                    Token = "",
-                    Avatar = user.AvatarImage,
-                    BackgroundImage = user.BackgroundImage,
-                };
+                return mapper.Map<UserMinInfoView>(user);
             }).ToList();
 
 
@@ -122,6 +119,8 @@ namespace ProductTrackingAPI.Services
 
         public async Task<List<Claim>> GetUserClaim(UserDetail user)
         {
+            //add role??
+
             return await context.UserClaims
                 .Include(e=>e.Claim)
                 .Where(c => c.UserId == user.Id)
@@ -139,6 +138,7 @@ namespace ProductTrackingAPI.Services
                 AccountType = accountType.ToString(),
                 Password = AppPasswordHasher.HashPassword(password),
                 Provider = provider.ToString(),
+                UserId = userId
             };
 
             await context.UserAccounts.AddAsync(account);
@@ -158,11 +158,11 @@ namespace ProductTrackingAPI.Services
 
             await context.DetailUsers.AddAsync(user);
 
-            await CreateUserAccount(user.Id, password, fullName, onSave:false);
+            await CreateUserAccount(user.Id, email, password, onSave:false);
 
 
             if (onSave) {
-                if (await SaveAllChange()) return false;
+                return await SaveAllChange();
             }
 
             return true;

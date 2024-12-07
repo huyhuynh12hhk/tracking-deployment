@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProductTrackingAPI.Constants;
-using ProductTrackingAPI.Models;
+using ProductTrackingAPI.Models.Products;
+using ProductTrackingAPI.Models.Social;
+using ProductTrackingAPI.Models.Users;
 using ProductTrackingAPI.Utils;
 
 namespace ProductTrackingAPI.Data
@@ -15,6 +17,11 @@ namespace ProductTrackingAPI.Data
         public DbSet<UserDetail> DetailUsers { get; set; }
         public DbSet<UserClaim> UserClaims { get; set; }
         public DbSet<ClaimDetail> Claims { get; set; }
+        public DbSet<ProductDetail> Products { get; set; }
+        public DbSet<ProductOriginRecord> ProductOrigins { get; set; }
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<Reaction> Reactions { get; set; }
+        public DbSet<Relationship> Relationships { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -24,6 +31,28 @@ namespace ProductTrackingAPI.Data
                 table.UserId,
                 table.ClaimId
             });
+
+            modelBuilder.Entity<Relationship>().HasKey(table => new {
+                table.FromUserId,
+                table.ToUserId
+            });
+
+
+
+            modelBuilder.Entity<ProductOriginRecord>()
+                .HasKey(table => new {
+                    table.FromProductId,
+                    table.ToProductId
+                });
+
+            modelBuilder.Entity<ProductOriginRecord>()
+                .HasOne(e => e.FromProduct)
+                .WithMany(e => e.Products);
+
+            modelBuilder.Entity<ProductOriginRecord>()
+                .HasOne(e => e.ToProduct)
+                .WithMany(e => e.Origins);
+                
 
             var claims = new ClaimDetail[]
             {
@@ -90,6 +119,17 @@ namespace ProductTrackingAPI.Data
                    UserId = user.Id
                 }
             }) ;
+
+            modelBuilder.Entity<ProductDetail>().HasData(new ProductDetail[]
+{
+                new()
+                {
+                    Name = "Cake Coffe",
+                    SupplierId = user.Id,
+                    Price = 300,
+                    
+                }
+            });
         }
     }
 }

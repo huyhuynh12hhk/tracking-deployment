@@ -22,7 +22,7 @@ namespace ProductTrackingAPI.DTOs
 
         public UserMinInfoView Supplier { get; set; }
 
-        public List<ProductView> Origins { get; set; }
-        public List<ProductView> Products { get; set; }
+        public List<ProductView> OriginProducts { get; set; }
+        //public List<ProductView> Products { get; set; }
     }
 }

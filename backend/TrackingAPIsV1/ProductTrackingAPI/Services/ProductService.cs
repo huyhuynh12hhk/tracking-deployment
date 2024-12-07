@@ -62,10 +62,10 @@ namespace ProductTrackingAPI.Services
 
             var rs = mapper.Map<ProductDetailView>(product);
 
-            rs.Origins = product.Origins.Select(e=>mapper.Map<ProductView>(e.FromProduct)).ToList();
 
 
             //extract origins and produtions here
+            rs.OriginProducts = product.Origins.Select(e=>mapper.Map<ProductView>(e.FromProduct)).ToList();
 
 
             return rs;
@@ -83,8 +83,8 @@ namespace ProductTrackingAPI.Services
                 await context.ProductOrigins.AddAsync(
                     new()
                     {
-                        FromProductId = newProduct.Id,
-                        ToProductId = item.Key,
+                        FromProductId = item.Key,
+                        ToProductId = newProduct.Id,
                         Note = item.Value
                     }
                 );

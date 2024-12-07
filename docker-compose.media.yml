@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  
+
+  Npsqldb:
+    image: postgres:latest
+    container_name: "Npgsql_Db"
+    ports:
+      - '5432:5432'
+    restart: always
+    
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=@o123456
+    networks:
+      ptms:
+        ipv4_address: 10.43.0.3
+
+  media.api:
+    build:
+      context: .
+      dockerfile: backend/TrackingAPIsV1/MediaAPI/Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    environment:
+        - ASPNETCORE_ENVIRONMENT=Deploy
+        - ASPNETCORE_URLS=http://+:80
+    networks:
+      ptms:
+        ipv4_address: 10.43.0.4
+
+networks:
+  ptms:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.43.0.0/16

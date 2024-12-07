@@ -8,7 +8,7 @@ namespace ProductTrackingAPI.DTOs
         public string Token { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
-        public string Avatar { get; set; }
+        public string AvatarImage { get; set; }
         public string BackgroundImage { get; set; }
 
     }

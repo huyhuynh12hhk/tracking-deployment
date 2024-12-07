@@ -275,3 +275,5 @@ D:\IT\Flutter\.project\TrackingProductSystem\backend\TrackingAPIsV1\ProductTrack
 D:\IT\Flutter\.project\TrackingProductSystem\backend\TrackingAPIsV1\ProductTrackingAPI\bin\Debug\net6.0\Npgsql.dll
 D:\IT\Flutter\.project\TrackingProductSystem\backend\TrackingAPIsV1\ProductTrackingAPI\bin\Debug\net6.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 D:\IT\Flutter\.project\TrackingProductSystem\backend\TrackingAPIsV1\ProductTrackingAPI\obj\Debug\net6.0\ProductTrackingAPI.sourcelink.json
+D:\IT\Flutter\.project\TrackingProductSystem\backend\TrackingAPIsV1\ProductTrackingAPI\bin\Debug\net6.0\AutoMapper.dll
+D:\IT\Flutter\.project\TrackingProductSystem\backend\TrackingAPIsV1\ProductTrackingAPI\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
